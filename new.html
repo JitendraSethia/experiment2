@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE ACCESS | FOR KUCHU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;900&display=swap');
+        
+        body { background: #000; overflow: hidden; font-family: 'Poppins', sans-serif; cursor: crosshair; }
+        .pink-glow { text-shadow: 0 0 10px #fb7185, 0 0 20px #fb7185; }
+        .shake { animation: shake 0.5s; animation-iteration-count: infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            50% { transform: translate(-1px, 2px) rotate(1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .heart-trail { position: fixed; pointer-events: none; z-index: 9999; animation: fly 1s forwards; }
+        @keyframes fly { to { transform: translateY(-100px) scale(2); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center text-pink-500">
+        <h2 class="text-2xl mb-4 font-mono animate-pulse uppercase tracking-[0.5em]">Security Check Required</h2>
+        <input type="password" id="pass" placeholder="Enter nickname..." class="bg-transparent border-2 border-pink-500 p-3 rounded-lg text-center outline-none focus:shadow-[0_0_15px_#fb7185]">
+        <button onclick="checkPass()" class="mt-4 px-8 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 transition">DECRYPT</button>
+    </div>
+
+    <div id="main-content" class="hidden h-screen w-screen flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-rose-100 via-pink-200 to-rose-300">
+        <div id="card" class="bg-white/30 backdrop-blur-2xl p-16 rounded-[60px] shadow-[0_0_100px_rgba(251,113,133,0.5)] border-4 border-white/40 text-center max-w-2xl relative">
+            <div id="meter-container" class="w-full h-2 bg-gray-200 rounded-full mb-8 overflow-hidden hidden">
+                <div id="meter" class="h-full bg-gradient-to-r from-pink-400 to-rose-600 w-0 transition-all"></div>
+            </div>
+            
+            <h1 id="text" class="text-6xl font-black text-rose-600 pink-glow mb-12 leading-tight"></h1>
+            
+            <div class="flex flex-col md:flex-row gap-10 justify-center items-center">
+                <button onmouseover="startMeter()" onmouseout="stopMeter()" onclick="ultimateYes()" class="bg-rose-500 hover:bg-rose-600 text-white px-16 py-6 rounded-3xl text-3xl font-bold shadow-2xl transform transition hover:scale-110 active:scale-90">
+                    YES! 💖
+                </button>
+                <button id="noBtn" onmouseover="dodge()" class="bg-gray-800 text-white px-16 py-6 rounded-3xl text-3xl font-bold transition-all">
+                    No
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Password Protection
+        function checkPass() {
+            const pass = document.getElementById('pass').value.toLowerCase();
+            if(pass === 'kuchu') {
+                document.getElementById('auth-screen').classList.add('animate__animated', 'animate__fadeOutUp');
+                setTimeout(() => {
+                    document.getElementById('auth-screen').remove();
+                    document.getElementById('main-content').classList.remove('hidden');
+                    startTypewriter();
+                }, 1000);
+            } else {
+                alert("Only Kuchu can enter! Access Denied.");
+            }
+        }
+
+        // 2. Typewriter
+        const msg = "Initialization complete...\nDetected: The most beautiful girl.\n\nWill you be my Valentine, Kuchu?";
+        let charIndex = 0;
+        function startTypewriter() {
+            if (charIndex < msg.length) {
+                document.getElementById("text").innerHTML += msg.charAt(charIndex).replace('\n', '<br>');
+                charIndex++;
+                setTimeout(startTypewriter, 50);
+            }
+        }
+
+        // 3. Dodge Logic
+        function dodge() {
+            const btn = document.getElementById('noBtn');
+            btn.style.position = 'absolute';
+            btn.style.left = Math.random() * 80 + '%';
+            btn.style.top = Math.random() * 80 + '%';
+            btn.innerHTML = ["Rude!", "Try harder", "Wrong button!", "Oops!", "Error 404"][Math.floor(Math.random()*5)];
+        }
+
+        // 4. Meter & Music Logic (Manual trigger for audio)
+        let meterVal = 0;
+        let meterInterval;
+        function startMeter() {
+            document.getElementById('meter-container').classList.remove('hidden');
+            meterInterval = setInterval(() => {
+                if(meterVal < 100) {
+                    meterVal += 2;
+                    document.getElementById('meter').style.width = meterVal + '%';
+                }
+            }, 20);
+        }
+        function stopMeter() { clearInterval(meterInterval); }
+
+        // 5. THE ULTIMATE YES
+        function ultimateYes() {
+            document.body.classList.add('shake');
+            const card = document.getElementById('card');
+            card.innerHTML = `<h1 class="text-8xl font-black text-rose-600 animate__animated animate__heartBeat animate__infinite">HAPPY VALENTINE'S DAY KUCHUUUU!!!!!</h1>`;
+            
+            // Endless Confetti
+            var end = Date.now() + (15 * 1000);
+            (function frame() {
+                confetti({ particleCount: 7, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#fb7185', '#ffffff'] });
+                confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#fb7185', '#ffffff'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+
+            // Floating Kuchu Text
+            setInterval(() => {
+                const div = document.createElement('div');
+                div.innerHTML = "KUCHU I LOVE YOU! ❤️";
+                div.className = "fixed text-rose-600 font-black pointer-events-none animate__animated animate__zoomInUp";
+                div.style.left = Math.random() * 90 + "vw";
+                div.style.top = Math.random() * 90 + "vh";
+                document.body.appendChild(div);
+            }, 100);
+        }
+
+        // 6. Interaction Heart Trail
+        document.addEventListener('mousedown', () => {
+            const h = document.createElement('div');
+            h.innerHTML = "🌸";
+            h.className = "heart-trail text-4xl";
+            h.style.left = event.clientX + 'px';
+            h.style.top = event.clientY + 'px';
+            document.body.appendChild(h);
+        });
+    </script>
+</body>
+</html>
