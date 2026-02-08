@@ -1,141 +1,262 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KUCHU'S ADVENTURE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Outfit:wght@400;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-        body { background: #fff1f2; font-family: 'Outfit', sans-serif; overflow: hidden; }
-        .calligraphy { font-family: 'Great Vibes', cursive; }
-        .game-card { background: white; border-radius: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .btn-action { background: #e11d48; color: white; padding: 1rem 2rem; border-radius: 1rem; font-weight: bold; transition: 0.3s; }
-        .btn-action:hover { transform: scale(1.05); background: #be123c; }
-    </style>
-</head>
-<body class="flex items-center justify-center min-h-screen">
+<script>
 
-    <div id="game-container" class="w-full max-w-lg p-6 text-center z-50">
-        
-        <div id="screen-intro" class="animate__animated animate__fadeIn">
-            <h1 class="calligraphy text-6xl text-rose-600 mb-6">Hello Kuchu!</h1>
-            <p class="text-gray-600 mb-8">I've hidden a surprise for you, but you need to prove your skills first. Ready?</p>
-            <button onclick="nextLevel(1)" class="btn-action">START QUEST</button>
-        </div>
+    /* ---------------- LOGIN SYSTEM ---------------- */
 
-        <div id="screen-l1" class="hidden game-card p-10 animate__animated animate__fadeInRight">
-            <h2 class="text-rose-500 font-black mb-4 uppercase">Level 1: Catch the Heart</h2>
-            <p class="text-sm text-gray-500 mb-6">Click the heart 5 times as it moves!</p>
-            <div class="h-64 relative border-2 border-dashed border-rose-200 rounded-xl overflow-hidden bg-rose-50">
-                <div id="moving-heart" onclick="catchHeart()" class="absolute cursor-pointer text-4xl transition-all duration-300">❤️</div>
+    function checkPass() {
+        const pass = document.getElementById('pass').value.toLowerCase();
+
+        if (pass === 'kuchu') {
+
+            document.getElementById('auth-screen').classList.add('animate__animated', 'animate__fadeOut');
+
+            setTimeout(() => {
+                document.getElementById('auth-screen').remove();
+                showLoadingScreen();
+            }, 600);
+
+        } else {
+            alert("ACCESS DENIED. Nickname incorrect.");
+        }
+    }
+    /* ---------------- EXTRA LOADING SCREEN ---------------- */
+
+    function showLoadingScreen() {
+
+        const loading = document.createElement("div");
+
+        loading.id = "loading-screen";
+        loading.className = "fixed inset-0 bg-black flex flex-col items-center justify-center text-pink-500 z-[200]";
+
+        loading.innerHTML = `
+            <h1 class="text-3xl mb-6 animate-pulse">Verifying Love Level 💖</h1>
+
+            <div class="w-64 h-2 bg-white/30 rounded-full overflow-hidden mb-4">
+                <div id="load-bar" class="h-full bg-pink-500 w-0"></div>
             </div>
-            <p id="l1-count" class="mt-4 font-bold text-rose-600">Caught: 0/5</p>
-        </div>
 
-        <div id="screen-l2" class="hidden game-card p-10 animate__animated animate__fadeInRight">
-            <h2 class="text-rose-500 font-black mb-4 uppercase">Level 2: Charge the Love</h2>
-            <p class="text-sm text-gray-500 mb-6">Tap rapidly to fill the love meter!</p>
-            <div class="w-full bg-gray-200 h-8 rounded-full mb-8 overflow-hidden">
-                <div id="meter-fill" class="h-full bg-rose-500 w-0 transition-all duration-100"></div>
-            </div>
-            <button onmousedown="fillMeter()" class="w-24 h-24 rounded-full bg-rose-500 text-white font-bold shadow-lg animate-bounce">TAP!</button>
-        </div>
+            <p id="load-text" class="text-sm tracking-widest uppercase">Scanning Heart...</p>
+        `;
 
-        <div id="screen-l3" class="hidden game-card p-10 animate__animated animate__fadeInRight">
-            <h2 class="text-rose-500 font-black mb-4 uppercase">Level 3: Find the Ring</h2>
-            <p class="text-sm text-gray-500 mb-6">One of these boxes has the key to my heart...</p>
-            <div class="grid grid-cols-3 gap-4" id="box-grid">
-                </div>
-        </div>
+        document.body.appendChild(loading);
 
-        <div id="screen-final" class="hidden animate__animated animate__zoomInDown">
-            <h1 class="calligraphy text-7xl md:text-9xl text-rose-600 mb-12 drop-shadow-lg">Will you be my Valentine, Kuchu?</h1>
-            <div class="flex gap-6 justify-center items-center">
-                <button onclick="victory()" class="bg-rose-600 text-white px-12 py-5 rounded-2xl text-3xl font-black shadow-2xl hover:scale-110 transition">YES! ❤️</button>
-                <button id="no-btn" onmouseover="dodge()" class="bg-gray-400 text-white px-12 py-5 rounded-2xl text-3xl font-black transition-all">No</button>
-            </div>
-        </div>
-    </div>
+        let progress = 0;
 
-    <script>
-        let currentLevel = 0;
+        const bar = document.getElementById("load-bar");
+        const text = document.getElementById("load-text");
 
-        function nextLevel(lvl) {
-            document.querySelectorAll('#game-container > div').forEach(div => div.classList.add('hidden'));
-            document.getElementById(`screen-${lvl === 'final' ? 'final' : 'l' + lvl}`).classList.remove('hidden');
-            if(lvl === 1) moveHeart();
-            if(lvl === 3) initBoxes();
-        }
+        const messages = [
+            "Scanning Heart 💓",
+            "Detecting Cuteness 😍",
+            "Checking Loyalty 🤞",
+            "Matching Souls ✨",
+            "Approved ❤️"
+        ];
 
-        // LEVEL 1 LOGIC
-        let heartScore = 0;
-        function moveHeart() {
-            const h = document.getElementById('moving-heart');
-            h.style.top = Math.random() * 80 + '%';
-            h.style.left = Math.random() * 80 + '%';
-        }
-        function catchHeart() {
-            heartScore++;
-            document.getElementById('l1-count').innerText = `Caught: ${heartScore}/5`;
-            if(heartScore >= 5) {
-                setTimeout(() => nextLevel(2), 500);
-            } else {
-                moveHeart();
+        let i = 0;
+
+        const interval = setInterval(() => {
+
+            progress += 2;
+            bar.style.width = progress + "%";
+
+            if (progress % 20 === 0 && i < messages.length) {
+                text.innerText = messages[i];
+                i++;
             }
-        }
 
-        // LEVEL 2 LOGIC
-        let charge = 0;
-        function fillMeter() {
-            charge += 5;
-            document.getElementById('meter-fill').style.width = charge + '%';
-            if(charge >= 100) {
-                setTimeout(() => nextLevel(3), 500);
+            if (progress >= 100) {
+
+                clearInterval(interval);
+
+                setTimeout(() => {
+                    loading.remove();
+                    document.getElementById('main-content').classList.remove('hidden');
+                    startTypewriter();
+                }, 500);
             }
+
+        }, 50);
+    }
+
+
+    /* ---------------- TYPEWRITER ---------------- */
+
+    const msg = "Initialization complete...\nTarget detected: The most beautiful girl.\n\nWill you be my Valentine, Kuchu?";
+    let charIndex = 0;
+
+    function startTypewriter() {
+        if (charIndex < msg.length) {
+
+            document.getElementById("text").innerHTML +=
+                msg.charAt(charIndex).replace('\n', '<br>');
+
+            charIndex++;
+
+            setTimeout(startTypewriter, 50);
+        }
+    }
+
+
+    /* ---------------- NO BUTTON LOGIC ---------------- */
+
+    let noCount = 0;
+
+    function dodge() {
+
+        const btn = document.getElementById('noBtn');
+
+        noCount++;
+
+        /* After 5 attempts */
+        if (noCount >= 5) {
+
+            btn.innerHTML = "Ahh fine… press it 😔";
+            btn.onmouseover = null;
+
+            showSadImage();
+
+            return;
         }
 
-        // LEVEL 3 LOGIC
-        function initBoxes() {
-            const grid = document.getElementById('box-grid');
-            const winner = Math.floor(Math.random() * 9);
-            for(let i=0; i<9; i++) {
-                const box = document.createElement('div');
-                box.className = "h-20 bg-rose-100 rounded-lg flex items-center justify-center text-3xl cursor-pointer hover:bg-rose-200 transition";
-                box.innerText = "🎁";
-                box.onclick = () => {
-                    if(i === winner) {
-                        box.innerText = "💍";
-                        box.classList.add('bg-yellow-200');
-                        setTimeout(() => nextLevel('final'), 800);
-                    } else {
-                        box.style.opacity = '0.3';
-                        box.style.pointerEvents = 'none';
-                    }
-                };
-                grid.appendChild(box);
+        btn.style.position = 'absolute';
+        btn.style.left = Math.random() * 80 + '%';
+        btn.style.top = Math.random() * 80 + '%';
+
+        const texts = ["Rude!", "Try harder", "Oops!", "Error 404", "Nah!"];
+
+        btn.innerHTML = texts[Math.floor(Math.random() * texts.length)];
+    }
+
+
+    /* ---------------- SAD IMAGE ---------------- */
+
+    function showSadImage() {
+
+        const img = document.createElement("img");
+
+        img.src = "sad.png";   // <-- Put your image name here
+        img.className = "fixed bottom-10 right-10 w-48 animate__animated animate__fadeInUp z-[300]";
+
+        document.body.appendChild(img);
+
+        setTimeout(() => {
+            img.remove();
+        }, 6000);
+    }
+
+
+    /* ---------------- LOVE METER ---------------- */
+
+    let meterVal = 0;
+    let meterInterval;
+
+    function startMeter() {
+
+        document.getElementById('meter-container').classList.remove('hidden');
+
+        meterInterval = setInterval(() => {
+
+            if (meterVal < 100) {
+
+                meterVal += 2.5;
+
+                document.getElementById('meter').style.width =
+                    meterVal + '%';
             }
-        }
 
-        // FINALE
-        function dodge() {
-            const btn = document.getElementById('no-btn');
-            btn.style.position = 'fixed';
-            btn.style.left = Math.random() * 80 + 'vw';
-            btn.style.top = Math.random() * 80 + 'vh';
-        }
+        }, 30);
+    }
 
-        function victory() {
-            document.getElementById('screen-final').innerHTML = `
-                <h1 class="calligraphy text-8xl md:text-[10rem] text-rose-600 animate__animated animate__heartBeat animate__infinite">Happy Valentine's Day Kuchu! ❤️</h1>
-            `;
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            setInterval(() => {
-                confetti({ particleCount: 50, angle: Math.random() * 360, spread: 100, origin: { x: Math.random(), y: Math.random() } });
-            }, 2000);
-        }
-    </script>
-</body>
-</html>
+    function stopMeter() {
+        clearInterval(meterInterval);
+    }
+
+
+    /* ---------------- YES BUTTON ---------------- */
+
+    function ultimateYes() {
+
+        document.body.classList.add('shake');
+
+        const card = document.getElementById('card');
+
+        card.innerHTML = `
+            <h1 class="calligraphy text-7xl md:text-9xl text-white pink-glow 
+            animate__animated animate__heartBeat animate__infinite">
+
+            Happy Valentine's Day Kuchuuuu!!!!! ❤️
+            </h1>
+        `;
+
+        document.body.style.backgroundColor = "#be123c";
+
+
+        /* Confetti */
+
+        var end = Date.now() + (15 * 1000);
+
+        (function frame() {
+
+            confetti({
+                particleCount: 10,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#fb7185', '#ffffff']
+            });
+
+            confetti({
+                particleCount: 10,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#fb7185', '#ffffff']
+            });
+
+            if (Date.now() < end)
+                requestAnimationFrame(frame);
+
+        })();
+
+
+        /* Floating Love Text */
+
+        setInterval(() => {
+
+            const div = document.createElement('div');
+
+            div.innerHTML = "I LOVE YOU! ❤️";
+
+            div.className =
+                "fixed text-white font-black pointer-events-none animate__animated animate__zoomInUp opacity-50";
+
+            div.style.left = Math.random() * 90 + "vw";
+            div.style.top = Math.random() * 90 + "vh";
+
+            document.body.appendChild(div);
+
+            setTimeout(() => div.remove(), 2000);
+
+        }, 150);
+    }
+
+
+    /* ---------------- CLICK HEARTS ---------------- */
+
+    document.addEventListener('mousedown', (e) => {
+
+        const h = document.createElement('div');
+
+        h.innerHTML = "🌸";
+
+        h.className = "heart-trail text-4xl";
+
+        h.style.left = e.clientX + 'px';
+        h.style.top = e.clientY + 'px';
+
+        document.body.appendChild(h);
+
+        setTimeout(() => h.remove(), 1000);
+    });
+
+</script>
